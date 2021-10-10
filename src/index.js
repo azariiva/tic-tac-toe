@@ -1,6 +1,16 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import './index.css';
+import { Text, StyleSheet } from 'react-native';
+
+const textStyles = StyleSheet.create({
+    bold: {
+        fontWeight: 'bold'
+    },
+    default: {
+        fontWeight: 'normal'
+    }
+})
 
 function Square(props) {
     return (
@@ -48,7 +58,8 @@ class Game extends React.Component {
         super(props);
         this.state = {
             history: [{
-                squares: Array(9).fill(null)
+                squares: Array(9).fill(null),
+                turn: null
             }],
             stepNumber: 0,
             xIsNext: true
@@ -60,13 +71,18 @@ class Game extends React.Component {
         const current = history[this.state.stepNumber];
         const winner = calculateWinner(current.squares);
 
-        const moves = history.map((_, move) => {
+        const moves = history.map((step, move) => {
             const desc = move !== 0 ?
-                `Switch to turn #${move}` :
+                `Switch to turn #${move}\n` +
+                `${step.description.value}: (col: ${step.description.column}, row: ${step.description.row})`:
                 `Switch to start of the game`;
             return (
                 <li key={move}>
-                    <button onClick={() => this.jumpTo(move)}>{desc}</button>
+                    <button onClick={() => this.jumpTo(move)}>
+                        <Text style={move === this.state.stepNumber ? textStyles.bold : textStyles.default}>
+                            {desc}
+                        </Text>
+                    </button>
                 </li>
             );
         });
@@ -105,7 +121,12 @@ class Game extends React.Component {
         squares[i] = this.state.xIsNext ? 'X' : 'O';
         this.setState({
             history: history.concat([{
-                squares: squares
+                squares: squares,
+                description: {
+                    value: squares[i],
+                    row: Math.floor(i / 3),
+                    column: i % 3,
+                }
             }]),
             stepNumber: history.length,
             xIsNext: !this.state.xIsNext,
