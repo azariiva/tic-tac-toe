@@ -1,47 +1,25 @@
-import React from 'react';
+import React, {useEffect, useState} from 'react';
 import ReactDOM from 'react-dom';
 import './index.css';
-import { Text, StyleSheet } from 'react-native';
+import Board from "./components/Board";
 
-const textStyles = StyleSheet.create({
+const textStyles = {
     bold: {
-        fontWeight: 'bold'
+        fontWeight: 800
     },
     default: {
-        fontWeight: 'normal'
+        fontWeight: 400
     }
-})
+}
 
-function Square(props) {
-    return (
-        <button className="square" onClick={props.onClick}>
-            {props.value}
+const HistoryButton = ({move, desc, style, onClick}) =>
+    <li key={move}>
+        <button onClick={() => onClick()}>
+            <span style={style}>
+                {desc}
+            </span>
         </button>
-    );
-}
-
-class Board extends React.Component {
-    renderSquare(i, j) {
-        return (
-            <Square
-                value={this.props.squares[i][j]}
-                onClick={() => this.props.onClick(i, j)}
-            />
-        );
-    }
-
-    render() {
-        return (
-            <div>
-                {this.props.squares.map((row, i) =>
-                    <div className="board-row">
-                        {row.map((_, j) => this.renderSquare(i, j))}
-                    </div>
-                )}
-            </div>
-        );
-    }
-}
+    </li>
 
 class Game extends React.Component {
     constructor(props) {
@@ -64,25 +42,16 @@ class Game extends React.Component {
         const moves = history.map((step, move) => {
             const desc = move !== 0 ?
                 `Switch to turn #${move}\n` +
-                `${step.description.value}: (col: ${step.description.column}, row: ${step.description.row})`:
+                `${step.description.value}: (col: ${step.description.column}, row: ${step.description.row})` :
                 `Switch to start of the game`;
             return (
-                <li key={move}>
-                    <button onClick={() => this.jumpTo(move)}>
-                        <Text style={move === this.state.stepNumber ? textStyles.bold : textStyles.default}>
-                            {desc}
-                        </Text>
-                    </button>
-                </li>
+                <HistoryButton desc={desc}
+                               move={move}
+                               style={move === this.state.stepNumber ? textStyles.bold : textStyles.default}
+                               onClick={() => this.jumpTo(move)}
+                />
             );
         });
-
-        let status;
-        if (winner) {
-            status = `Winner: ${winner}`;
-        } else {
-            status = `Next player: ${this.state.xIsNext ? 'X' : 'O'}`;
-        }
 
         return (
             <div className="game">
@@ -93,7 +62,7 @@ class Game extends React.Component {
                     />
                 </div>
                 <div className="game-info">
-                    <div>{status}</div>
+                    <div>{winner ? `Winner: ${winner}` : `Next player: ${this.state.xIsNext ? 'X' : 'O'}`}</div>
                     <ol>{moves}</ol>
                 </div>
             </div>
@@ -206,5 +175,5 @@ function calculateWinner(squares) {
 
 // ========================================
 
-ReactDOM.render(<Game />, document.getElementById("root"));
+ReactDOM.render(<Game/>, document.getElementById("root"));
 
