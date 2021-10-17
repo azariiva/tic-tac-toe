@@ -7,6 +7,7 @@ const Game = ({fieldWidth, fieldHeight, winCondition}) => {
     }]);
     const [stepNumber, setStepNumber] = useState(0);
     const [winner, setWinner] = useState(null);
+    const totalNumberOfTurns = fieldHeight * fieldWidth;
 
     const calculateWinner = (i, j, squares) => {
         const currentPlayer = squares[i][j]
@@ -128,6 +129,21 @@ const Game = ({fieldWidth, fieldHeight, winCondition}) => {
         );
     });
 
+    const getStatusText = () => {
+        if (winner && history.length - 1 === stepNumber) {
+            return (
+                <plaintext style={{fontWeight: '800', color: 'green'}}>{`Winner: ${winner[0]}`}</plaintext>
+            )
+        } else if (stepNumber === totalNumberOfTurns) {
+            return (
+                <plaintext style={{fontWeight: '800', color: 'blue'}}>Draw</plaintext>
+            );
+        }
+        return (
+            <plaintext>{`Next player: ${stepNumber % 2 ? 'O' : 'X'}`}</plaintext>
+        );
+    }
+
     return (
         <div className='game'>
             <div className="game-board">
@@ -138,7 +154,7 @@ const Game = ({fieldWidth, fieldHeight, winCondition}) => {
                 />
             </div>
             <div className="game-info">
-                {winner && history.length - 1 === stepNumber ? <text style={{fontWeight: '800', color: 'green'}}>{`Winner: ${winner[0]}`}</text>: <text>{`Next player: ${stepNumber % 2 ? 'O' : 'X'}`}</text>}
+                {getStatusText()}
                 <ol>{moves}</ol>
             </div>
         </div>
