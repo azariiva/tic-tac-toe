@@ -1,5 +1,18 @@
 import React, {useState} from 'react';
 import Board from "./Board";
+import SliderSwitch from "./SliderSwitch";
+
+const styles = {
+    ul: {
+        listStyle: "none",
+        margin: 0,
+        padding: 0
+    },
+    status: {
+        win: {fontWeight: '800', color: 'green'},
+        draw: {fontWeight: '800', color: 'blue'},
+    }
+};
 
 const Game = ({fieldWidth, fieldHeight, winCondition}) => {
     const [history, setHistory] = useState([{
@@ -8,6 +21,7 @@ const Game = ({fieldWidth, fieldHeight, winCondition}) => {
     const [stepNumber, setStepNumber] = useState(0);
     const [winner, setWinner] = useState(null);
     const totalNumberOfTurns = fieldHeight * fieldWidth;
+    const [movesListOrder, setMovesListOrder] = useState('asc')
 
     const calculateWinner = (i, j, squares) => {
         const currentPlayer = squares[i][j]
@@ -120,6 +134,8 @@ const Game = ({fieldWidth, fieldHeight, winCondition}) => {
             `Switch to start of the game`;
         return (
             <li key={move}>
+                <strong>{move + 1}</strong>
+                &nbsp;
                 <button onClick={() => setStepNumber(move)}>
                     <span style={move === stepNumber ? {fontWeight: 800} : {fontWeight: 400}}>
                         {desc}
@@ -128,15 +144,18 @@ const Game = ({fieldWidth, fieldHeight, winCondition}) => {
             </li>
         );
     });
+    if (movesListOrder === 'desc') {
+        moves.reverse()
+    }
 
     const getStatusText = () => {
         if (winner && history.length - 1 === stepNumber) {
             return (
-                <plaintext style={{fontWeight: '800', color: 'green'}}>{`Winner: ${winner[0]}`}</plaintext>
+                <plaintext style={styles.status.win}>{`Winner: ${winner[0]}`}</plaintext>
             )
         } else if (stepNumber === totalNumberOfTurns) {
             return (
-                <plaintext style={{fontWeight: '800', color: 'blue'}}>Draw</plaintext>
+                <plaintext style={styles.status.draw}>Draw</plaintext>
             );
         }
         return (
@@ -152,10 +171,11 @@ const Game = ({fieldWidth, fieldHeight, winCondition}) => {
                     onClick={(i, j) => makeTurn(i, j)}
                     winner={winner ? winner[1] : null}
                 />
+                <SliderSwitch onChange={() => movesListOrder === 'asc' ? setMovesListOrder('desc') : setMovesListOrder('asc')}/>
             </div>
             <div className="game-info">
                 {getStatusText()}
-                <ol>{moves}</ol>
+                <ul style={styles.ul}>{moves}</ul>
             </div>
         </div>
     );
