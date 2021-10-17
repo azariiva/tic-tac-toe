@@ -1,13 +1,94 @@
 import React, {useState} from 'react';
 import Board from "./Board";
 
-const Game = () => {
+const Game = ({fieldWidth, fieldHeight, winCondition}) => {
     const [history, setHistory] = useState([{
-        squares: Array(3).fill(Array(3).fill(null))
-    }])
-    const [stepNumber, setStepNumber] = useState(0)
-    const [winner, setWinner] = useState(null)
+        squares: Array(fieldWidth).fill(Array(fieldHeight).fill(null))
+    }]);
+    const [stepNumber, setStepNumber] = useState(0);
+    const [winner, setWinner] = useState(null);
 
+    const calculateWinner = (i, j, squares) => {
+        const currentPlayer = squares[i][j]
+
+        const calcRow = () => {
+            let lineSet = []
+
+            for (let k = j - 1; k >= 0; k--) {
+                if (squares[i][k] !== currentPlayer) {
+                    break;
+                }
+                lineSet.push(i * squares.length + k);
+            }
+            for (let k = j + 1; k < squares[i].length; k++) {
+                if (squares[i][k] !== currentPlayer) {
+                    break;
+                }
+                lineSet.push(i * squares.length + k);
+            }
+            return lineSet;
+        }
+
+        const calcColumn = () => {
+            let lineSet = []
+
+            for (let k = i - 1; k >= 0; k--) {
+                if (squares[k][j] !== currentPlayer) {
+                    break;
+                }
+                lineSet.push(k * squares.length + j);
+            }
+            for (let k = i + 1; k < squares.length; k++) {
+                if (squares[k][j] !== currentPlayer) {
+                    break;
+                }
+                lineSet.push(k * squares.length + j);
+            }
+            return lineSet;
+        }
+
+        const calcLeftDiag = () => {
+            let lineSet = []
+
+            for (let [k, l] = [i - 1, j - 1]; k >= 0 && l >= 0; k--, l--) {
+                if (squares[k][l] !== currentPlayer) {
+                    break;
+                }
+                lineSet.push(k * squares.length + l);
+            }
+            for (let [k, l] = [i + 1, j + 1]; k < squares.length && l < squares[i].length; k++, l++) {
+                if (squares[k][l] !== currentPlayer) {
+                    break;
+                }
+                lineSet.push(k * squares.length + l);
+            }
+            return lineSet;
+        }
+
+        const calcRightDiag = () => {
+            let lineSet = []
+
+            for (let [k, l] = [i + 1, j - 1]; k < squares.length && l >= 0; k++, l--) {
+                if (squares[k][l] !== currentPlayer) {
+                    break;
+                }
+                lineSet.push(k * squares.length + l);
+            }
+            for (let [k, l] = [i - 1, j + 1]; k >= 0 && l < squares[k].length; k--, l++) {
+                if (squares[k][l] !== currentPlayer) {
+                    break;
+                }
+                lineSet.push(k * squares.length + l);
+            }
+            return lineSet;
+        }
+
+        let result = [calcRow(), calcColumn(), calcLeftDiag(), calcRightDiag()]
+            .filter(lineSet => lineSet.length + 1 >= winCondition)
+        result = result.length ? result.reduce((pv, cv) => pv.concat(cv)) : []
+        result.push(i * squares.length + j)
+        return (result.length > 1 ? [currentPlayer, new Set(result)] : null);
+    };
 
     const makeTurn = (i, j) => {
         const current = history[stepNumber]
@@ -27,8 +108,9 @@ const Game = () => {
             }])
         )
         setStepNumber(stepNumber + 1)
-        setWinner(calculateWinner(squares))
-    }
+        setWinner(calculateWinner(i, j, squares))
+    };
+
 
     const moves = history.map((step, move) => {
         const desc = move !== 0 ?
@@ -52,87 +134,15 @@ const Game = () => {
                 <Board
                     squares={history[stepNumber].squares}
                     onClick={(i, j) => makeTurn(i, j)}
+                    winner={winner ? winner[1] : null}
                 />
             </div>
             <div className="game-info">
-                <div>{winner ? `Winner: ${winner}` : `Next player: ${stepNumber % 2 ? 'O' : 'X'}`}</div>
+                {winner && history.length - 1 === stepNumber ? <text style={{fontWeight: '800', color: 'green'}}>{`Winner: ${winner[0]}`}</text>: <text>{`Next player: ${stepNumber % 2 ? 'O' : 'X'}`}</text>}
                 <ol>{moves}</ol>
             </div>
         </div>
     );
-}
-
-// this logic works only for square fields with corresponding winCondition
-function calculateWinner(squares) {
-    const winCondition = 3;
-
-    // check rows
-    for (let row of squares) {
-        const savedValue = row[0];
-        if (savedValue) {
-            let ctr = 0;
-            for (let elem of row) {
-                if (elem === savedValue) {
-                    ctr++;
-                } else {
-                    break;
-                }
-                if (ctr === winCondition) {
-                    return savedValue;
-                }
-            }
-        }
-    }
-
-    // check columns
-    for (let i = 0; i < squares[0].length; ++i) {
-        const savedValue = squares[0][i];
-        if (savedValue) {
-            let ctr = 0;
-            for (let j = 0; j < squares.length; ++j) {
-                const elem = squares[j][i];
-                if (elem === savedValue) {
-                    ctr++;
-                } else {
-                    break;
-                }
-                if (ctr === winCondition) {
-                    return savedValue;
-                }
-            }
-        }
-    }
-
-    // check diagonals
-    let savedValue = squares[0][0];
-    if (savedValue) {
-        let ctr = 0;
-        for (let i = 0; i < squares.length; ++i) {
-            if (squares[i][i] === savedValue) {
-                ctr++;
-            } else {
-                break;
-            }
-            if (ctr === winCondition) {
-                return savedValue;
-            }
-        }
-    }
-    savedValue = squares[0][squares.length - 1];
-    if (savedValue) {
-        let ctr = 0;
-        for (let i = squares.length - 1; i >= 0; i--) {
-            if (squares[squares.length - i - 1][i] === savedValue) {
-                ctr++;
-            } else {
-                break;
-            }
-            if (ctr === winCondition) {
-                return savedValue;
-            }
-        }
-    }
-    return null;
 }
 
 export default Game

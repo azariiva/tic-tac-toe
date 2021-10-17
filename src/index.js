@@ -6,6 +6,6 @@ import Game from "./components/Game";
 // ========================================
 
 ReactDOM.render(
-    <Game/>
+    <Game fieldWidth={6} fieldHeight={4} winCondition={3}/>
     , document.getElementById("root"));
 

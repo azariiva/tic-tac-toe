@@ -1,7 +1,7 @@
 import React from 'react';
 
-const Square = ({onClick, value}) =>
-    <button className="square" onClick={onClick}>
+const Square = ({onClick, value, color}) =>
+    <button className="square" onClick={onClick} style={{color}}>
         {value}
     </button>
 
