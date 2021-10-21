@@ -16,7 +16,8 @@ const styles = {
 
 const Game = ({fieldWidth, fieldHeight, winCondition}) => {
     const [history, setHistory] = useState([{
-        squares: Array(fieldWidth).fill(Array(fieldHeight).fill(null))
+        squares: Array(fieldWidth).fill(Array(fieldHeight).fill(null)),
+        description: null
     }]);
     const [stepNumber, setStepNumber] = useState(0);
     const [winner, setWinner] = useState(null);
@@ -136,7 +137,15 @@ const Game = ({fieldWidth, fieldHeight, winCondition}) => {
             <li key={move}>
                 <strong>{move + 1}</strong>
                 &nbsp;
-                <button onClick={() => setStepNumber(move)}>
+                <button onClick={() => {
+                    setStepNumber(move)
+                    const current = history[move]
+                    if (current.description) {
+                        setWinner(calculateWinner(current.description.row, current.description.column, current.squares))
+                    } else {
+                        setWinner(null)
+                    }
+                }}>
                     <span style={move === stepNumber ? {fontWeight: 800} : {fontWeight: 400}}>
                         {desc}
                     </span>
@@ -149,7 +158,7 @@ const Game = ({fieldWidth, fieldHeight, winCondition}) => {
     }
 
     const getStatusText = () => {
-        if (winner && history.length - 1 === stepNumber) {
+        if (winner) {
             return (
                 <plaintext style={styles.status.win}>{`Winner: ${winner[0]}`}</plaintext>
             )
